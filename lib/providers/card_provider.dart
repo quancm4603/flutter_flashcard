@@ -14,6 +14,23 @@ class CardProvider with ChangeNotifier {
     }
   }
 
+  Future<void> addCard(int deckId, String question, String answer) async {
+    try {
+      final card = FlashCard(
+        deckId: deckId,
+        question: question,
+        answer: answer,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _db.createCard(card);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error adding card: $e');
+      rethrow;
+    }
+  }
+
   Future<void> deleteCard(int cardId) async {
     try {
       await _db.deleteCard(cardId);

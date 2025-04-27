@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/card_provider.dart';
 import '../models/deck.dart';
 import '../models/flashcard.dart';
+import '../screens/create_card_screen.dart';
 
 class DeckCardsScreen extends StatefulWidget {
   final Deck deck;
@@ -15,6 +16,17 @@ class DeckCardsScreen extends StatefulWidget {
 
 class _DeckCardsScreenState extends State<DeckCardsScreen> {
   final TextEditingController _searchController = TextEditingController();
+  late Future<List<FlashCard>> _cardsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCards();
+  }
+
+  void _loadCards() {
+    _cardsFuture = context.read<CardProvider>().getCardsForDeck(widget.deck.id!);
+  }
 
   @override
   void dispose() {
@@ -62,7 +74,7 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
           // Cards list
           Expanded(
             child: FutureBuilder<List<FlashCard>>(
-              future: context.read<CardProvider>().getCardsForDeck(widget.deck.id!),
+              future: _cardsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -94,7 +106,17 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Navigate to add card screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateCardScreen(deck: widget.deck),
+            ),
+          ).then((_) {
+            // Reload the cards when returning from the CreateCardScreen
+            setState(() {
+              _loadCards();
+            });
+          });
         },
         child: const Icon(Icons.add),
       ),
@@ -118,7 +140,9 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
                 color: theme.colorScheme.secondary,
               ),
               onPressed: () {
-                context.read<CardProvider>().toggleCardMastery(card.id!, !card.isMastered);
+                context
+                    .read<CardProvider>()
+                    .toggleCardMastery(card.id!, !card.isMastered);
               },
             ),
             IconButton(
@@ -130,7 +154,12 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
-                context.read<CardProvider>().deleteCard(card.id!);
+                context.read<CardProvider>().deleteCard(card.id!).then((_) {
+                  // Reload the cards after deleting a card
+                  setState(() {
+                    _loadCards();
+                  });
+                });
               },
             ),
           ],
