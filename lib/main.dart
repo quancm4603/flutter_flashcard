@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'providers/theme_provider.dart';
 import 'providers/deck_provider.dart';
 import 'providers/card_provider.dart';
-import 'database/database_helper.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {

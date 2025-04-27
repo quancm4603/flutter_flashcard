@@ -4,6 +4,7 @@ import '../providers/card_provider.dart';
 import '../models/deck.dart';
 import '../models/flashcard.dart';
 import '../screens/create_card_screen.dart';
+import '../screens/study_mode_screen.dart';
 
 class DeckCardsScreen extends StatefulWidget {
   final Deck deck;
@@ -96,7 +97,7 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
                   itemCount: cards.length,
                   itemBuilder: (context, index) {
                     final card = cards[index];
-                    return _buildCardItem(card, theme);
+                    return _buildCardItem(card, theme, cards);
                   },
                 );
               },
@@ -123,48 +124,59 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
     );
   }
 
-  Widget _buildCardItem(FlashCard card, ThemeData theme) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: ListTile(
-        title: Text(
-          card.question,
-          style: theme.textTheme.bodyLarge,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(
-                card.isMastered ? Icons.star : Icons.star_border,
-                color: theme.colorScheme.secondary,
-              ),
-              onPressed: () {
-                context
-                    .read<CardProvider>()
-                    .toggleCardMastery(card.id!, !card.isMastered);
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                // TODO: Implement edit card functionality
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                context.read<CardProvider>().deleteCard(card.id!).then((_) {
-                  // Reload the cards after deleting a card
-                  setState(() {
-                    _loadCards();
-                  });
-                });
-              },
-            ),
-          ],
-        ),
+  Widget _buildCardItem(FlashCard card, ThemeData theme, List<FlashCard> cards) {
+  return Card(
+    margin: const EdgeInsets.only(bottom: 16),
+    child: ListTile(
+      title: Text(
+        card.question,
+        style: theme.textTheme.bodyLarge,
       ),
-    );
-  }
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(
+              card.isMastered ? Icons.star : Icons.star_border,
+              color: theme.colorScheme.secondary,
+            ),
+            onPressed: () {
+              context
+                  .read<CardProvider>()
+                  .toggleCardMastery(card.id!, !card.isMastered);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              // TODO: Implement edit card functionality
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              context.read<CardProvider>().deleteCard(card.id!).then((_) {
+                // Reload the cards after deleting a card
+                setState(() {
+                  _loadCards();
+                });
+              });
+            },
+          ),
+        ],
+      ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StudyModeScreen(
+              cards: cards,
+              initialIndex: cards.indexOf(card),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
 }
