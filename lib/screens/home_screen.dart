@@ -4,6 +4,7 @@ import '../providers/deck_provider.dart';
 import '../providers/theme_provider.dart';
 import '../models/deck.dart';
 import 'create_deck_screen.dart';
+import 'deck_cards_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -86,7 +87,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: decks.length,
                   itemBuilder: (context, index) {
                     final deck = decks[index];
-                    return _buildDeckCard(deck, theme);
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DeckCardsScreen(deck: deck),
+                          ),
+                        );
+                      },
+                      child: _buildDeckCard(deck, theme),
+                    );
                   },
                 );
               },
@@ -142,25 +153,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   deck.masteryPercentageFormatted,
                   style: theme.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Edit and delete buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    // TODO: Implement edit functionality
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    context.read<DeckProvider>().deleteDeck(deck.id!);
-                  },
                 ),
               ],
             ),
