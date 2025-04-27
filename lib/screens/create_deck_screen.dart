@@ -12,11 +12,13 @@ class CreateDeckScreen extends StatefulWidget {
 class _CreateDeckScreenState extends State<CreateDeckScreen> {
   final _formKey = GlobalKey<FormState>();
   final _deckNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void dispose() {
     _deckNameController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -28,7 +30,7 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
     try {
       await context.read<DeckProvider>().addDeck(
             _deckNameController.text.trim(),
-            null, // No description for now to keep it simple
+            _descriptionController.text.trim(),
           );
       if (mounted) {
         Navigator.pop(context);
@@ -48,18 +50,39 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Create Deck'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Add settings functionality if needed
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Deck Name Field
+                Text(
+                  'Deck Name',
+                  style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 8),
                 TextFormField(
                   controller: _deckNameController,
                   decoration: InputDecoration(
-                    hintText: 'Deck Name',
+                    hintText: 'Enter deck name',
                     filled: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -78,6 +101,36 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
+                // Description Field
+                Text(
+                  'Description',
+                  style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(
+                    hintText: 'Add description (optional)',
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                // Instruction Text
+                Text(
+                  'You can add cards after creating the deck',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const Spacer(),
+                // Add Button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -96,13 +149,7 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
-                            'Add',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                        : const Icon(Icons.add, size: 24),
                   ),
                 ),
               ],

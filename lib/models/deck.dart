@@ -5,6 +5,13 @@ class Deck {
   final DateTime createdAt;
   final DateTime updatedAt;
   final int cardCount;
+  final int masteredCount;
+
+  // Calculate mastery percentage
+  double get masteryPercentage => cardCount > 0 ? (masteredCount / cardCount) * 100 : 0;
+  
+  // Format mastery percentage for display
+  String get masteryPercentageFormatted => "${masteryPercentage.round()}%";
 
   Deck({
     this.id,
@@ -13,6 +20,7 @@ class Deck {
     required this.createdAt,
     required this.updatedAt,
     this.cardCount = 0,
+    this.masteredCount = 0,
   });
 
   Deck copy({
@@ -22,6 +30,7 @@ class Deck {
     DateTime? createdAt,
     DateTime? updatedAt,
     int? cardCount,
+    int? masteredCount,
   }) =>
       Deck(
         id: id ?? this.id,
@@ -30,6 +39,7 @@ class Deck {
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         cardCount: cardCount ?? this.cardCount,
+        masteredCount: masteredCount ?? this.masteredCount,
       );
 
   Map<String, dynamic> toMap() {

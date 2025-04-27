@@ -31,9 +31,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CARDS'),
+        title: const Text('Decks'),
         centerTitle: true,
         actions: [
           IconButton(
@@ -46,10 +48,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
+          // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
+              onChanged: (value) {
+                context.read<DeckProvider>().setSearchQuery(value);
+              },
               decoration: InputDecoration(
                 hintText: 'Search deck',
                 prefixIcon: const Icon(Icons.search),
@@ -60,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          // Deck list
           Expanded(
             child: Consumer<DeckProvider>(
               builder: (context, deckProvider, child) {
@@ -79,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: decks.length,
                   itemBuilder: (context, index) {
                     final deck = decks[index];
-                    return _buildDeckCard(deck);
+                    return _buildDeckCard(deck, theme);
                   },
                 );
               },
@@ -101,21 +108,64 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDeckCard(Deck deck) {
+  Widget _buildDeckCard(Deck deck, ThemeData theme) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      child: ListTile(
-        title: Text(
-          deck.title,
-          style: Theme.of(context).textTheme.bodyLarge,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Deck title
+            Text(
+              deck.title,
+              style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 8),
+            // Progress bar
+            LinearProgressIndicator(
+              value: deck.cardCount > 0
+                  ? deck.masteredCount / deck.cardCount
+                  : 0,
+              backgroundColor: theme.colorScheme.surface,
+              color: theme.colorScheme.secondary,
+            ),
+            const SizedBox(height: 8),
+            // Deck details
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${deck.masteredCount}/${deck.cardCount} cards mastered',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                Text(
+                  deck.masteryPercentageFormatted,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Edit and delete buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    // TODO: Implement edit functionality
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    context.read<DeckProvider>().deleteDeck(deck.id!);
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
-        subtitle: Text(
-          'num. of cards: ${deck.cardCount}',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        onTap: () {
-          // TODO: Navigate to deck detail screen
-        },
       ),
     );
   }
