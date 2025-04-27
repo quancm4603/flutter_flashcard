@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/flashcard.dart';
+import '../providers/card_provider.dart';
 import '../components/settings_dialog.dart';
 
 class StudyModeScreen extends StatefulWidget {
@@ -48,6 +50,16 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
         _isFront = true;
       });
     }
+  }
+
+  Future<void> _toggleMastery(FlashCard card) async {
+    await context
+        .read<CardProvider>()
+        .toggleCardMastery(card.id!, !card.isMastered);
+    setState(() {
+      widget.cards[_currentIndex] =
+          card.copy(isMastered: !card.isMastered); // Update the card locally
+    });
   }
 
   @override
@@ -109,15 +121,31 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      _isFront ? card.question : card.answer,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineSmall,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          _isFront ? card.question : card.answer,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.headlineSmall,
+                        ),
+                      ),
                     ),
-                  ),
+                    // Star button
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: IconButton(
+                        icon: Icon(
+                          card.isMastered ? Icons.star : Icons.star_border,
+                          color: theme.colorScheme.secondary,
+                        ),
+                        onPressed: () => _toggleMastery(card),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

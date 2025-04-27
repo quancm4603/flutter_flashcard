@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/deck_provider.dart';
+import '../providers/card_provider.dart';
 import '../models/deck.dart';
 import 'create_deck_screen.dart';
 import 'deck_cards_screen.dart';
-import '../components/settings_dialog.dart'; // Import the settings dialog
+import 'edit_deck_screen.dart';
+import '../components/settings_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,6 +30,53 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshDecks() async {
+    await context.read<DeckProvider>().loadDecks();
+  }
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context, Deck deck) async {
+    final theme = Theme.of(context);
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Delete Deck',
+          style: theme.textTheme.titleLarge,
+        ),
+        content: Text(
+          'Are you sure you want to delete the deck "${deck.title}"? This will also delete all associated cards.',
+          style: theme.textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Delete',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true) {
+      context.read<DeckProvider>().deleteDeck(deck.id!);
+      context.read<CardProvider>().deleteAllCardsForDeck(deck.id!);
+    }
   }
 
   @override
@@ -70,40 +119,48 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // Deck list
+          // Deck list with pull-to-refresh
           Expanded(
-            child: Consumer<DeckProvider>(
-              builder: (context, deckProvider, child) {
-                if (deckProvider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            child: RefreshIndicator(
+              onRefresh: _refreshDecks,
+              child: Consumer<DeckProvider>(
+                builder: (context, deckProvider, child) {
+                  if (deckProvider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                final decks = deckProvider.decks;
-                if (decks.isEmpty) {
-                  return const Center(
-                    child: Text('No decks yet. Create your first deck!'),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: decks.length,
-                  itemBuilder: (context, index) {
-                    final deck = decks[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DeckCardsScreen(deck: deck),
-                          ),
-                        );
-                      },
-                      child: _buildDeckCard(deck, theme),
+                  final decks = deckProvider.decks;
+                  if (decks.isEmpty) {
+                    return const Center(
+                      child: Text('No decks yet. Create your first deck!'),
                     );
-                  },
-                );
-              },
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: decks.length,
+                    itemBuilder: (context, index) {
+                      final deck = decks[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DeckCardsScreen(deck: deck),
+                            ),
+                          ).then((_) {
+                            // Reload the decks when returning from DeckCardsScreen
+                            setState(() {
+                              _refreshDecks();
+                            });
+                          });
+                        },
+                        child: _buildDeckCard(deck, theme),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -138,14 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
             // Progress bar
             LinearProgressIndicator(
-              value: deck.cardCount > 0
-                  ? deck.masteredCount / deck.cardCount
-                  : 0,
+              value:
+                  deck.cardCount > 0 ? deck.masteredCount / deck.cardCount : 0,
               backgroundColor: theme.colorScheme.surface,
               color: theme.colorScheme.secondary,
             ),
             const SizedBox(height: 8),
-            // Deck details
+            // Deck details and edit button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -153,9 +209,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   '${deck.masteredCount}/${deck.cardCount} cards mastered',
                   style: theme.textTheme.bodyMedium,
                 ),
-                Text(
-                  deck.masteryPercentageFormatted,
-                  style: theme.textTheme.bodyMedium,
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditDeckScreen(deck: deck),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        _showDeleteConfirmationDialog(context, deck);
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),

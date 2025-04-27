@@ -5,6 +5,7 @@ import '../models/deck.dart';
 import '../models/flashcard.dart';
 import '../screens/create_card_screen.dart';
 import '../screens/study_mode_screen.dart';
+import '../screens/edit_card_screen.dart';
 import '../components/settings_dialog.dart';
 
 class DeckCardsScreen extends StatefulWidget {
@@ -27,13 +28,60 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
   }
 
   void _loadCards() {
-    _cardsFuture = context.read<CardProvider>().getCardsForDeck(widget.deck.id!);
+    _cardsFuture =
+        context.read<CardProvider>().getCardsForDeck(widget.deck.id!);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _showDeleteConfirmationDialog(
+      BuildContext context, FlashCard card) async {
+    final theme = Theme.of(context);
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Delete Card',
+          style: theme.textTheme.titleLarge,
+        ),
+        content: Text(
+          'Are you sure you want to delete this card? This action cannot be undone.',
+          style: theme.textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Delete',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true) {
+      await context.read<CardProvider>().deleteCard(card.id!);
+      setState(() {
+        _loadCards();
+      });
+    }
   }
 
   @override
@@ -128,59 +176,73 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
     );
   }
 
-  Widget _buildCardItem(FlashCard card, ThemeData theme, List<FlashCard> cards) {
-  return Card(
-    margin: const EdgeInsets.only(bottom: 16),
-    child: ListTile(
-      title: Text(
-        card.question,
-        style: theme.textTheme.bodyLarge,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(
-              card.isMastered ? Icons.star : Icons.star_border,
-              color: theme.colorScheme.secondary,
-            ),
-            onPressed: () {
-              context
-                  .read<CardProvider>()
-                  .toggleCardMastery(card.id!, !card.isMastered);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              // TODO: Implement edit card functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () {
-              context.read<CardProvider>().deleteCard(card.id!).then((_) {
-                // Reload the cards after deleting a card
+  Widget _buildCardItem(
+      FlashCard card, ThemeData theme, List<FlashCard> cards) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: ListTile(
+        title: Text(
+          card.question,
+          style: theme.textTheme.bodyLarge,
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                card.isMastered ? Icons.star : Icons.star_border,
+                color: theme.colorScheme.secondary,
+              ),
+              onPressed: () async {
+                await context
+                    .read<CardProvider>()
+                    .toggleCardMastery(card.id!, !card.isMastered);
                 setState(() {
-                  _loadCards();
+                  _loadCards(); // Reload the cards after toggling mastery
                 });
-              });
-            },
-          ),
-        ],
-      ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => StudyModeScreen(
-              cards: cards,
-              initialIndex: cards.indexOf(card),
+              },
             ),
-          ),
-        );
-      },
-    ),
-  );
-}
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditCardScreen(card: card),
+                  ),
+                ).then((_) {
+                  // Reload the cards after editing a card
+                  setState(() {
+                    _loadCards();
+                  });
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                _showDeleteConfirmationDialog(context, card);
+              },
+            ),
+          ],
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudyModeScreen(
+                cards: cards,
+                initialIndex: cards.indexOf(card),
+              ),
+            ),
+          ).then((_) {
+            // Reload the cards when returning from the StudyModeScreen
+            setState(() {
+              _loadCards();
+            });
+          });
+        },
+      ),
+    );
+  }
 }

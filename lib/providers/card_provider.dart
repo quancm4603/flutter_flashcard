@@ -41,6 +41,26 @@ class CardProvider with ChangeNotifier {
     }
   }
 
+  Future<void> updateCard(FlashCard updatedCard) async {
+    try {
+      await _db.updateCard(updatedCard);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error updating card: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAllCardsForDeck(int deckId) async {
+    try {
+      await _db.deleteAllCardsForDeck(deckId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error deleting all cards for deck: $e');
+      rethrow;
+    }
+  }
+
   Future<void> toggleCardMastery(int cardId, bool isMastered) async {
     try {
       await _db.toggleCardMastery(cardId, isMastered);

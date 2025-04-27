@@ -240,6 +240,20 @@ class DatabaseHelper {
     }
   }
 
+  Future<int> deleteAllCardsForDeck(int deckId) async {
+    try {
+      final db = await database;
+      return await db.delete(
+        'cards',
+        where: 'deck_id = ?',
+        whereArgs: [deckId],
+      );
+    } catch (e) {
+      debugPrint('Error deleting all cards for deck: $e');
+      return 0;
+    }
+  }
+
   Future<int> toggleCardMastery(int cardId, bool isMastered) async {
     try {
       final db = await database;
