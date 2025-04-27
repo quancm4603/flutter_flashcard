@@ -5,6 +5,7 @@ import '../models/deck.dart';
 import '../models/flashcard.dart';
 import '../screens/create_card_screen.dart';
 import '../screens/study_mode_screen.dart';
+import '../components/settings_dialog.dart';
 
 class DeckCardsScreen extends StatefulWidget {
   final Deck deck;
@@ -47,7 +48,10 @@ class _DeckCardsScreenState extends State<DeckCardsScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Add settings functionality if needed
+              showDialog(
+                context: context,
+                builder: (context) => const SettingsDialog(),
+              );
             },
           ),
         ],

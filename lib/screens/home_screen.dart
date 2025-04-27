@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/deck_provider.dart';
-import '../providers/theme_provider.dart';
 import '../models/deck.dart';
 import 'create_deck_screen.dart';
 import 'deck_cards_screen.dart';
+import '../components/settings_dialog.dart'; // Import the settings dialog
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,7 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              context.read<ThemeProvider>().toggleTheme();
+              showDialog(
+                context: context,
+                builder: (context) => const SettingsDialog(),
+              );
             },
           ),
         ],

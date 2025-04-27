@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/deck_provider.dart';
+import '../components/settings_dialog.dart';
 
 class CreateDeckScreen extends StatefulWidget {
   const CreateDeckScreen({super.key});
@@ -60,7 +61,10 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Add settings functionality if needed
+              showDialog(
+                context: context,
+                builder: (context) => const SettingsDialog(),
+              );
             },
           ),
         ],

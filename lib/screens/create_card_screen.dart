@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/card_provider.dart';
 import '../models/deck.dart';
+import '../components/settings_dialog.dart';
 
 class CreateCardScreen extends StatefulWidget {
   final Deck deck;
@@ -64,7 +65,10 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Add settings functionality if needed
+              showDialog(
+                context: context,
+                builder: (context) => const SettingsDialog(),
+              );
             },
           ),
         ],

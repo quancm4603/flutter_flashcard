@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/flashcard.dart';
+import '../components/settings_dialog.dart';
 
 class StudyModeScreen extends StatefulWidget {
   final List<FlashCard> cards;
@@ -62,7 +63,10 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Add settings functionality if needed
+              showDialog(
+                context: context,
+                builder: (context) => const SettingsDialog(),
+              );
             },
           ),
         ],
