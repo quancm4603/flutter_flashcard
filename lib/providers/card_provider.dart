@@ -3,7 +3,7 @@ import '../database/database_helper.dart';
 import '../models/flashcard.dart';
 
 class CardProvider with ChangeNotifier {
-  final DatabaseHelper _db = DatabaseHelper.instance;
+  DatabaseHelper _db = DatabaseHelper.instance;
 
   Future<List<FlashCard>> getCardsForDeck(int deckId) async {
     try {
@@ -69,5 +69,9 @@ class CardProvider with ChangeNotifier {
       debugPrint('Error toggling card mastery: $e');
       rethrow;
     }
+  }
+
+  Future<void> setDatabaseHelper(DatabaseHelper db) async {
+    _db = db;
   }
 }

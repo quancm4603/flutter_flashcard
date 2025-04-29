@@ -93,10 +93,7 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
               children: [
                 Text(
                   'Card ${_currentIndex + 1} of ${widget.cards.length}',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                Text(
-                  card.question,
+                  key: const Key('progress_text'),
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
@@ -106,6 +103,7 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: LinearProgressIndicator(
+              key: const Key('progress_bar'),
               value: (_currentIndex + 1) / widget.cards.length,
               backgroundColor: theme.colorScheme.surface,
               color: theme.colorScheme.secondary,
@@ -115,6 +113,7 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
           // Flashcard
           Expanded(
             child: GestureDetector(
+              key: const Key('flashcard_gesture_detector'),
               onTap: _flipCard,
               child: Card(
                 margin: const EdgeInsets.all(16.0),
@@ -128,19 +127,19 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
                           _isFront ? card.question : card.answer,
+                          key: const Key('flashcard_text'),
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.headlineSmall,
+                          style: Theme.of(context).textTheme.headlineSmall,
                         ),
                       ),
                     ),
-                    // Star button
                     Positioned(
                       top: 16,
                       right: 16,
                       child: IconButton(
                         icon: Icon(
                           card.isMastered ? Icons.star : Icons.star_border,
-                          color: theme.colorScheme.secondary,
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
                         onPressed: () => _toggleMastery(card),
                       ),
