@@ -4,7 +4,7 @@ import '../models/deck.dart';
 import '../models/flashcard.dart';
 
 class DeckProvider with ChangeNotifier {
-  final DatabaseHelper _db = DatabaseHelper.instance;
+  DatabaseHelper _db = DatabaseHelper.instance;
   List<Deck> _decks = [];
   bool _isLoading = false;
   String _searchQuery = '';
@@ -136,5 +136,9 @@ class DeckProvider with ChangeNotifier {
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
+  }
+  
+  void setDatabaseHelper(DatabaseHelper dbHelper) {
+    _db = dbHelper;
   }
 }
